@@ -1,17 +1,18 @@
+import { errorHandler } from "../middleware/error.js";
 import User from "../models/user.model.js";
 import bcrypt from "bcryptjs";
 
-export const registerUser = async (req, res) => {
+export const registerUser = async (req, res, next) => {
   const { username, email, password } = req.body;
 
   if (!username || !email || !password) {
-    return res.status(401).json({ message: "All fields are required!" });
+    return next(errorHandler(400, "All fields are required!"));
   }
 
   const checkUser = await User.findOne({ email });
 
   if (checkUser) {
-    return res.status(401).json({ message: "User already exist!" });
+    return next(errorHandler(400, "Email is already exist!"));
   }
 
   try {
@@ -25,6 +26,6 @@ export const registerUser = async (req, res) => {
 
     res.status(201).json(newUser);
   } catch (error) {
-    res.status(500).json(error);
+    next(error);
   }
 };
